@@ -21,6 +21,16 @@ public class IHDR extends Chunk {
             {8, 16}             // color type = 6
     };
 
+    // the number of bytes per complete pixel, rounding up to one
+    public int getBpp(){
+        if(colorType == 2)
+            return 3;
+        else {
+            System.out.println("Error when find bpp");
+            return -100;
+        }
+    }
+
     public IHDR(byte[] length, byte[] type, byte[] data, byte[] crc) throws DecodeException {
         super(length, type, data, crc);
         //if(this.type != ChunkType.IEND)

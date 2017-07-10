@@ -1,21 +1,15 @@
 package Decode;
 
 import Util.CRC;
-import Util.PNG;
 import Util.chunk.IDAT;
 import Util.chunk.IHDR;
 import Util.chunk.PLTE;
-import com.sun.deploy.util.ArrayUtil;
 import Util.ByteHandler;
+
+import java.awt.*;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.zip.CRC32;
 
 import static Util.ByteHandler.byteToLong;
 
@@ -38,7 +32,7 @@ public class Decoder {
 
     }
 
-    public PNG decode() throws IOException, DecodeException {
+    public PNG readInPNG() throws IOException, DecodeException {
         PNG png = new PNG();
         byte[] h = readBytes(8);
         for (int i = 0; i < 8; i++) {

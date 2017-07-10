@@ -2,6 +2,9 @@ package Util.chunk;
 
 import Util.ByteHandler;
 
+import java.io.BufferedReader;
+import java.util.ArrayList;
+
 /**
  * Created by baislsl on 17-7-9.
  */
@@ -11,12 +14,28 @@ public class Chunk {
     protected byte[] data;
     protected byte[] crc = new byte[4];
 
-    Chunk(){}
+    public byte[] outputStream() {
+        byte[] output = new byte[4 + 4 + data.length + 4];
+        Byte[] lengthBytes = new Byte[4];
+        for (int i = 0; i < 4; i++) {
+            output[3 - i] = (byte) (length & 0xff);
+        }
+//        String typeName = type.name().toUpperCase();
+//        for (int i = 0; i < 4; i++) {
+//            output[4 + i] = (byte) typeName.charAt(i);
+//        }
+        System.arraycopy(data, 0, output, 8, data.length);
+        System.arraycopy(crc, 0, output, output.length - crc.length, crc.length);
+        return output;
+    }
+
+    Chunk() {
+    }
 
 
     Chunk(byte[] length, byte[] type, byte[] data, byte[] crc) {
         this.length = ByteHandler.byteToLong(length);
-       // this.type = Enum.valueOf(ChunkType, ByteHandler.byteToString(type).toUpperCase())
+        // this.type = Enum.valueOf(ChunkType, ByteHandler.byteToString(type).toUpperCase())
         this.data = data;
         this.crc = crc;
 
@@ -24,19 +43,19 @@ public class Chunk {
     }
 
 
-    public long getLength(){
+    public long getLength() {
         return length;
     }
 
-    public ChunkType getType(){
+    public ChunkType getType() {
         return type;
     }
 
-    public byte[] getData(){
+    public byte[] getData() {
         return data;
     }
 
-    public byte[] getCrc(){
+    public byte[] getCrc() {
         return crc;
     }
 }

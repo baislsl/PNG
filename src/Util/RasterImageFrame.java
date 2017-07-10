@@ -26,10 +26,13 @@ public class RasterImageFrame extends JFrame {
     {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         WritableRaster raster = image.getRaster();
+        ColorModel model = image.getColorModel();
 
         for (int i = 0; i < width; i++)
             for (int j = 0; j < height; j++) {
-                raster.setDataElements(i, j, data[i][j]);
+                int argb = data[i][j].getRGB();
+                Object colorData = model.getDataElements(argb, null);
+                raster.setDataElements(i, j, colorData);
             }
         return image;
     }
