@@ -23,8 +23,11 @@ public class IHDR extends Chunk {
 
     // the number of bytes per complete pixel, rounding up to one
     public int getBpp(){
-        if(colorType == 2)
+        if(colorType == 2){             // Each pixel is an R,G,B triple.
             return 3;
+        } else if(colorType == 6){      // Each pixel is an R,G,B triple, followed by an alpha sample.
+            return 4;
+        }
         else {
             System.out.println("Error when find bpp");
             return -100;
