@@ -37,6 +37,17 @@ The IHDR chunk must appear FIRST. It contains(bytes):
 
 #### IDAT Image data
 
+IDAT 
+
+解码:
+    先LZ77
+    每一行第一位定义filter type, 
+    
+    LZ77 uncompress后总共有height*width*pixelSize + height bytes
+    
+    执行filter Algorithm
+    
+
 
 An additional "filter-type" byte is added to the beginning of every scanline (see Filtering). 
 The filter-type byte is not considered part of the image data, but it is included in 

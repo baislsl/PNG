@@ -19,7 +19,7 @@ import static Util.LZ77.*;
 public class Test {
     public static void main(String[] args){
         try{
-            Decoder decoder = new Decoder("./src/test/test.png");
+            Decoder decoder = new Decoder("./src/test/test2.png");
             PNG png = decoder.readInPNG();
             png.show();
             png.save("testOutput.png");

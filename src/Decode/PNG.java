@@ -40,8 +40,8 @@ public class PNG {
     private static int paethPredictor(int a, int b, int c) {
         int p = a + b - c;
         int pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
-        if(pa <= pb && pa <= pc) return a;
-        if(pb <= pc) return b;
+        if (pa <= pb && pa <= pc) return a;
+        if (pb <= pc) return b;
         return c;
     }
 
@@ -96,19 +96,31 @@ public class PNG {
         int width = (int) ihdr.getWidth(), height = (int) ihdr.getHeight();
         Color[][] colors = filterAlgorithm(uncompressData, width, height, ihdr.getBpp());
         JFrame frame = new RasterImageFrame((int) ihdr.getWidth(), (int) ihdr.getHeight(), colors);
-        frame.setTitle("RasterImageTest");
+        frame.setTitle("PNG");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
         writeInPixel();
 
     }
 
-    public byte[] getImageData() throws DataFormatException {
-        byte[] data = idats.get(0).getData();
-        byte[] output = LZ77.uncompress(data);
-        for (byte b : output) {
-            // System.out.println(Byte.toUnsignedInt(b));
+    public byte[] getIDATData(){
+        int dataSize = 0;
+        for (IDAT idat : idats) {
+            dataSize += idat.dataLength();
         }
+        byte[] data = new byte[dataSize];
+        int curPos = 0;
+        for (IDAT idat : idats) {
+            System.arraycopy(idat.getData(), 0, data, curPos, (int) idat.dataLength());
+            curPos += idat.dataLength();
+        }
+        return data;
+
+    }
+
+    public byte[] getImageData() throws DataFormatException {
+        byte[] data = getIDATData();
+        byte[] output = LZ77.uncompress(data);
         System.out.println("Size after decode=" + output.length);
         return output;
     }
@@ -147,7 +159,7 @@ public class PNG {
                 ++index;
                 printWriter.write("\n");
                 for (int j = 0; j < ihdr.getWidth(); j++) {
-                   printWriter.write(colors[j][i].toString());
+                    printWriter.write(colors[j][i].toString());
 //                    printWriter.write(
 //                            "( " + Integer.toString((int) output[index] & 0xff) +
 //                                    ", " + Integer.toString((int) output[index + 1] & 0xff)

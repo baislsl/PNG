@@ -42,6 +42,9 @@ public class Chunk {
 
     }
 
+    public long dataLength(){
+        return data.length;
+    }
 
     public long getLength() {
         return length;
