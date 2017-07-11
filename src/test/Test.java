@@ -18,11 +18,15 @@ import static Util.LZ77.*;
  */
 public class Test {
     public static void main(String[] args){
+
         try{
-            Decoder decoder = new Decoder("./src/test/test7.png");
-            PNG png = decoder.readInPNG();
-            png.show();
-            png.save("testOutput.png");
+            for(int i=1;i<=7;i++){
+                Decoder decoder = new Decoder("./src/test/test" + i +".png");
+                PNG png = decoder.readInPNG();
+                png.show();
+                // png.save("testOutput.png");
+            }
+
             // CRCtest();
             // LZ77Test();
             // Decoder.readInPNG("./src/test/test.png");

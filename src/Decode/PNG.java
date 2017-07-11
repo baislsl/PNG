@@ -47,7 +47,7 @@ public class PNG {
 
     // apply reverse Filter Algorithms to byte data
     // bpp = 3
-    private static byte[] reverseFilterAlgorithm(byte[] data, int width, int height, int bpp) {
+    private static byte[][] reverseFilterAlgorithm(byte[] data, int width, int height, int bpp) {
         int[] filterType = new int[height];
         int[][] blocks = new int[height][width * bpp];
         int dataIndex = 0;
@@ -83,51 +83,81 @@ public class PNG {
             }
         }
 
-        dataIndex = 0;
+        byte[][] result = new byte[height][width * bpp];
         for (int i = 0; i < height; i++) {
-            data[dataIndex++] = (byte) (filterType[i] & 0xff);
             for (int j = 0; j < width * bpp; j++) {
-                data[dataIndex++] = (byte) blocks[i][j];
+                result[i][j] = (byte) blocks[i][j];
             }
         }
-        return data;
+        return result;
     }
 
-    private static Color[][] getColorData(byte[] data, int width, int height,
-                                          int colorType, int bitDepth) {
+    private Color[][] getColorData(byte[][] data) throws DecodeException{
+        int bpp = ihdr.getBpp();
+        int width = (int)ihdr.getWidth();
+        int height = (int)ihdr.getHeight();
+        int colorType = ihdr.getColorType();
+        int bitDepth = ihdr.getBitDepth();
         Color[][] colors = new Color[width][height];
-        int dataIndex = 0;
-
-        if (colorType == 2 && bitDepth == 8) {
-            for (int i = 0; i < height; i++) {
-                ++dataIndex;
-                for (int j = 0; j < width; j++) {
-                    colors[j][i] = new Color(data[dataIndex]&0xff, data[dataIndex + 1]&0xff, data[dataIndex + 2]&0xff);
-                    dataIndex += 3;
-                }
-            }
-        } else if (colorType == 6 && bitDepth == 8) {
-            for (int i = 0; i < height; i++) {
-                ++dataIndex;
-                for (int j = 0; j < width; j++) {
-                    colors[j][i] = new Color(data[dataIndex]&0xff, data[dataIndex + 1]&0xff, data[dataIndex + 2]&0xff, data[dataIndex + 3]&0xff);
-                    dataIndex += 4;
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                switch (colorType) {
+                    case 2:
+                        if (bitDepth == 8) {  // bpp = 3
+                            colors[j][i] = new Color(
+                                    data[i][bpp * j] & 0xff,
+                                    data[i][bpp * j + 1] & 0xff,
+                                    data[i][bpp * j + 2] & 0xff
+                            );
+                        } else if (bitDepth == 16) {   // bpp = 6
+                            colors[j][i] = new Color(
+                                    ((data[i][bpp * j] << 8) | (data[i][bpp * j + 1])) & 0xffff,
+                                    ((data[i][bpp * j + 2] << 8) | (data[i][bpp * j + 3])) & 0xffff,
+                                    ((data[i][bpp * j + 4] << 8) | (data[i][bpp * j + 5])) & 0xffff
+                            );
+                        }
+                        break;
+                    case 6:
+                        if (bitDepth == 8) {  // bpp = 4
+                            colors[j][i] = new Color(
+                                    data[i][bpp * j] & 0xff,
+                                    data[i][bpp * j + 1] & 0xff,
+                                    data[i][bpp * j + 2] & 0xff,
+                                    data[i][bpp * j + 3] & 0xff
+                            );
+                        } else if (bitDepth == 16) {   // bpp = 8
+                            colors[j][i] = new Color(
+                                    ((data[i][bpp * j] << 8) | (data[i][bpp * j + 1])) & 0xffff,
+                                    ((data[i][bpp * j + 2] << 8) | (data[i][bpp * j + 3])) & 0xffff,
+                                    ((data[i][bpp * j + 4] << 8) | (data[i][bpp * j + 5])) & 0xffff,
+                                    ((data[i][bpp * j + 6] << 8) | (data[i][bpp * j + 7])) & 0xffff
+                            );
+                        }
+                        break;
+                    case 3:
+                        int gap = 8 / bitDepth;
+                        int a = (1 << bitDepth) - 1;
+                        colors[j][i] = plte.getColor(data[i][j / gap] & a);
+                        break;
+                    default:
+                        throw new DecodeException("Do not support color type " + colorType);
                 }
             }
         }
+
         return colors;
     }
 
-    public void show() throws DataFormatException {
+    public void show() throws DecodeException {
         byte[] uncompressData = getImageData();
         int width = (int) ihdr.getWidth(), height = (int) ihdr.getHeight();
-        byte[] transferData = reverseFilterAlgorithm(uncompressData, width, height, ihdr.getBpp());
-        Color[][] colors = getColorData(transferData, width, height, ihdr.getColorType(), ihdr.getBitDepth());
+        byte[][] transferData = reverseFilterAlgorithm(uncompressData, width, height, ihdr.getBpp());
+        Color[][] colors = getColorData(transferData);
         JFrame frame = new RasterImageFrame((int) ihdr.getWidth(), (int) ihdr.getHeight(), colors);
         frame.setTitle("PNG");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
-        writeInPixel();
+//        writeInPixel();
 
     }
 
@@ -145,9 +175,14 @@ public class PNG {
         return data;
     }
 
-    public byte[] getImageData() throws DataFormatException {
+    public byte[] getImageData() throws DecodeException {
         byte[] data = getIDATData();
-        byte[] output = LZ77.uncompress(data);
+        byte[] output;
+        try{
+            output = LZ77.uncompress(data);
+        }catch (DataFormatException e){
+            throw new DecodeException(e);
+        }
         System.out.println("Size after decode=" + output.length);
         return output;
     }
@@ -175,32 +210,5 @@ public class PNG {
         this.iend = iend;
     }
 
-    private void writeInPixel() {
-        try {
-            byte[] output = getImageData();
-            int width = (int) ihdr.getWidth(), height = (int) ihdr.getHeight();
-            byte[] transferData = reverseFilterAlgorithm(output, width, height, ihdr.getBpp());
-            Color[][] colors = getColorData(transferData, width, height, ihdr.getColorType(), ihdr.getBitDepth());
-            PrintWriter printWriter = new PrintWriter("imageData.txt");
-            int index = 0;
-            for (int i = 0; i < ihdr.getHeight(); i++) {
-                ++index;
-                printWriter.write("\n");
-                for (int j = 0; j < ihdr.getWidth(); j++) {
-                    printWriter.write(colors[j][i].toString());
-//                    printWriter.write(
-//                            "( " + Integer.toString((int) output[index] & 0xff) +
-//                                    ", " + Integer.toString((int) output[index + 1] & 0xff)
-//                                    + ", " + Integer.toString((int) output[index + 2] & 0xff) + "), "
-//                    );
-                    index += 3;
-                }
-            }
-            printWriter.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
 }

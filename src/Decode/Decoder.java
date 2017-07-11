@@ -6,7 +6,6 @@ import Util.chunk.IHDR;
 import Util.chunk.PLTE;
 import Util.ByteHandler;
 
-import java.awt.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,7 +59,7 @@ public class Decoder {
             }else if(chunkName.equals("IDAT")){
                 IDAT idat = new IDAT(length, type, data, crc);
                 png.add(idat);
-            }else if(chunkName.equals("PLET")){
+            }else if(chunkName.equals("PLTE")){
                 PLTE plte = new PLTE(length, type, data, crc);
                 png.add(plte);
             }
@@ -71,7 +70,7 @@ public class Decoder {
             System.arraycopy(data, 0, crcData, 4, (int) size);
             long checkCrc = CRC.crc(crcData, (int) size + 4);
             if (checkCrc != crcL) {
-                throw new DecodeException("Error data stream for in correct crc");
+                throw new DecodeException("Error data stream for incorrect crc");
             }
 
         }

@@ -27,6 +27,8 @@ public class IHDR extends Chunk {
             return 3;
         } else if(colorType == 6){      // Each pixel is an R,G,B triple, followed by an alpha sample.
             return 4;
+        } else if(colorType == 3){      // palette index, roll up to 1
+            return 1;
         }
         else {
             System.out.println("Error when find bpp");
