@@ -2,6 +2,7 @@ package com.baislsl.png.decode;
 
 import com.baislsl.png.encrypt.LZ77;
 import com.baislsl.png.chunk.*;
+import com.baislsl.png.encrypt.ReverseFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

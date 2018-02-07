@@ -1,4 +1,4 @@
-package com.baislsl.png.decode;
+package com.baislsl.png.encrypt;
 
 public class ReverseFilter {
     private ReverseFilter(){}

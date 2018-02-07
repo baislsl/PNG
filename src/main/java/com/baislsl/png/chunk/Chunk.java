@@ -26,11 +26,9 @@ public class Chunk {
         return output;
     }
 
-    Chunk() {
-    }
 
 
-    Chunk(byte[] length, byte[] type, byte[] data, byte[] crc) {
+    protected Chunk(byte[] length, byte[] type, byte[] data, byte[] crc) {
         this.length = ByteHandler.byteToLong(length);
         // this.type = Enum.valueOf(ChunkType, ByteHandler.byteToString(type).toUpperCase())
         this.data = data;

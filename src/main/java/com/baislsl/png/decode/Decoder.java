@@ -1,10 +1,13 @@
 package com.baislsl.png.decode;
 
+import com.baislsl.png.chunk.ChunkType;
 import com.baislsl.png.encrypt.CRC;
 import com.baislsl.png.chunk.IDAT;
 import com.baislsl.png.chunk.IHDR;
 import com.baislsl.png.chunk.PLTE;
 import com.baislsl.png.util.ByteHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,9 +19,10 @@ import static com.baislsl.png.util.ByteHandler.byteToLong;
  * Created by baislsl on 17-7-9.
  */
 public class Decoder {
+    private final static Logger LOG = LoggerFactory.getLogger(Decoder.class);
     private final InputStream in;
 
-    final private static char[] head = {
+    private final static char[] head = {
             0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a
     };
 
@@ -26,62 +30,73 @@ public class Decoder {
         in = new FileInputStream(path);
     }
 
-    public Decoder(InputStream in) throws IOException {
-        this.in = in;
+    private void readHeader() throws DecodeException, IOException {
+        byte[] header = readBytes(8);
+        for (int i = 0; i < 8; i++) {
+            if ((header[i] & 0xff) != (int) head[i])
+                throw new DecodeException("It seems that this is not a PNG files");
+        }
+        LOG.info(ByteHandler.byteToString(header));
+    }
 
+    private boolean readChunk(PNG png, String chunkName,
+                              byte[] length, byte[] type,
+                              byte[] data, byte[] crc) throws IOException, DecodeException {
+        for (ChunkType chunkType : ChunkType.values()) {
+            if (chunkType.name().equals(chunkName)) {
+                chunkType.apply(png, length, type, data, crc);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean checkCrc(byte[] data, long crcNumber) {
+        return crcNumber == CRC.crc(data, data.length);
+    }
+
+    private boolean checkCrc(byte[] type, byte[] data, byte[] crc) {
+        long crcNumber = byteToLong(crc);
+        byte[] crcData = new byte[4 + data.length];
+        System.arraycopy(type, 0, crcData, 0, 4);
+        System.arraycopy(data, 0, crcData, 4, data.length);
+
+        return checkCrc(crcData, crcNumber);
     }
 
     public PNG readInPNG() throws IOException, DecodeException {
         PNG png = new PNG();
-        byte[] h = readBytes(8);
-        for (int i = 0; i < 8; i++) {
-            if ((h[i] & 0xff) != (int) head[i])
-                throw new DecodeException("It seems that this is not a PNG files");
-        }
+        readHeader();
 
-        System.out.println(ByteHandler.byteToString(h));
-
-        while (true) {
+        String chunkName;
+        do {
             byte[] length = readBytes(4);
             long size = byteToLong(length);
             byte[] type = readBytes(4);
-            System.out.println(ByteHandler.byteToString(type));
-            String chunkName = ByteHandler.byteToString(type).toUpperCase();
-            if (chunkName.equals("IEND"))
-                break;
             byte[] data = readBytes((int) size);
             byte[] crc = readBytes(4);
+            chunkName = ByteHandler.byteToString(type).toUpperCase();
+            LOG.info(ByteHandler.byteToString(type));
 
-            if(chunkName.equals("IHDR")){
-                IHDR ihdr = new IHDR(length, type, data, crc);
-                png.setIhdr(ihdr);
-                ihdr.showInfo();
-            }else if(chunkName.equals("IDAT")){
-                IDAT idat = new IDAT(length, type, data, crc);
-                png.add(idat);
-            }else if(chunkName.equals("PLTE")){
-                PLTE plte = new PLTE(length, type, data, crc);
-                png.setPlte(plte);
+            boolean found = readChunk(png, chunkName, length, type, data, crc);
+            if (!found) {
+                LOG.info("Not support chunk name {}", chunkName);
             }
 
-            long crcL = byteToLong(crc);
-            byte[] crcData = new byte[4 + (int) size];
-            System.arraycopy(type, 0, crcData, 0, 4);
-            System.arraycopy(data, 0, crcData, 4, (int) size);
-            long checkCrc = CRC.crc(crcData, (int) size + 4);
-            if (checkCrc != crcL) {
+            boolean crcMatch = checkCrc(type, data, crc);
+            if (!crcMatch) {
                 throw new DecodeException("Error data stream for incorrect crc");
             }
-
-        }
+        } while (!"IEND".equals(chunkName));
         return png;
     }
 
 
-
     private byte[] readBytes(int size) throws IOException {
         byte[] result = new byte[size];
-        in.read(result, 0, size);
+        int ret = in.read(result, 0, size);
+        if (ret == -1)
+            throw new IOException("Reaching to the end of the file");
         return result;
     }
 
