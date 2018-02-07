@@ -3,7 +3,10 @@ package com.baislsl.png;
 import com.baislsl.png.decode.Decoder;
 import com.baislsl.png.decode.PNG;
 import com.baislsl.png.encrypt.CRC;
+import com.baislsl.png.ui.RasterImageFrame;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.zip.CRC32;
 import java.util.zip.DataFormatException;
 
@@ -16,10 +19,15 @@ public class Test {
     public static void main(String[] args){
 
         try{
-            for(int i=1;i<=7;i++){
+            for(int i=1;i<=2;i++){
                 Decoder decoder = new Decoder("/home/baislsl/java/png-decode/src/main/resources/test" + i +".png");
                 PNG png = decoder.readInPNG();
-                png.show();
+                Color[][] colors = png.getColor();
+                JFrame frame = new RasterImageFrame((int) png.getWidth(), (int) png.getHeight(), colors);
+                frame.setTitle("PNG");
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setVisible(true);
+
                 // png.save("testOutput.png");
             }
 

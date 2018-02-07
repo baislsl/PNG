@@ -1,101 +1,45 @@
 package com.baislsl.png.decode;
 
 import com.baislsl.png.encrypt.LZ77;
-import com.baislsl.png.ui.RasterImageFrame;
 import com.baislsl.png.chunk.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
-import java.awt.*;
-import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.awt.Color;
 import java.util.zip.DataFormatException;
 
 /**
  * Created by baislsl on 17-7-9.
  */
 public class PNG {
+    private final static Logger LOG = LoggerFactory.getLogger(PNG.class);
     private IHDR ihdr;
-    private ArrayList<IDAT> idats = new ArrayList<>();
+    private IDATManager idats = new IDATManager();
     private PLTE plte;
     private IEND iend;
-
 
     public PNG() {
     }
 
-
-    public void save(String path) {
-        try {
-            PrintWriter out = new PrintWriter(path);
-            byte[] data = idats.get(0).outputStream();
-            for (byte b : data) {
-                out.write(b);
-            }
-            out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public PNG(IHDR ihdr, IDATManager idats, PLTE plte, IEND iend) {
+        this.ihdr = ihdr;
+        this.idats = idats;
+        this.plte = plte;
+        this.iend = iend;
     }
 
-    private static int paethPredictor(int a, int b, int c) {
-        int p = a + b - c;
-        int pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
-        if (pa <= pb && pa <= pc) return a;
-        if (pb <= pc) return b;
-        return c;
+    public Color[][] getColor() throws DecodeException {
+        byte[] rawData = idats.getIDATData();
+        byte[] uncompressData = applyLZ77(rawData);
+        byte[][] transferData = applyReverseFilter(uncompressData);
+        Color[][] colors = applyColorTransfer(transferData);
+        return colors;
     }
 
-    // apply reverse Filter Algorithms to byte data
-    // bpp = 3
-    private static byte[][] reverseFilterAlgorithm(byte[] data, int width, int height, int bpp) {
-        int[] filterType = new int[height];
-        int[][] blocks = new int[height][width * bpp];
-        int dataIndex = 0;
-        for (int i = 0; i < height; i++) {
-            filterType[i] = Byte.toUnsignedInt(data[dataIndex++]);
-            for (int j = 0; j < width * bpp; j++) {
-                blocks[i][j] = Byte.toUnsignedInt(data[dataIndex++]);
-            }
-        }
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width * bpp; j++) {
-                int prior = (i == 0) ? 0 : blocks[i - 1][j];
-                int rawBpp = (j < bpp) ? 0 : blocks[i][j - bpp];
-                int bppPrior = (i == 0 || j < bpp) ? 0 : blocks[i - 1][j - bpp];
-                switch (filterType[i]) {
-                    case 0: // none
-                        break;
-                    case 1: // sub
-                        blocks[i][j] = blocks[i][j] + rawBpp;
-                        break;
-                    case 2: // up
-                        blocks[i][j] = blocks[i][j] + prior;
-                        break;
-                    case 3: //average
-                        blocks[i][j] = blocks[i][j] + (rawBpp + prior) / 2;
-                        break;
-                    case 4: // paeth
-                        blocks[i][j] = blocks[i][j] + paethPredictor(rawBpp, prior, bppPrior);
-                        break;
-                    default:
-                }
-                blocks[i][j] &= 0xff;
-            }
-        }
-
-        byte[][] result = new byte[height][width * bpp];
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width * bpp; j++) {
-                result[i][j] = (byte) blocks[i][j];
-            }
-        }
-        return result;
-    }
-
-    private Color[][] getColorData(byte[][] data) throws DecodeException{
+    private Color[][] applyColorTransfer(byte[][] data) throws DecodeException {
         int bpp = ihdr.getBpp();
-        int width = (int)ihdr.getWidth();
-        int height = (int)ihdr.getHeight();
+        int width = (int) ihdr.getWidth();
+        int height = (int) ihdr.getHeight();
         int colorType = ihdr.getColorType();
         int bitDepth = ihdr.getBitDepth();
         Color[][] colors = new Color[width][height];
@@ -148,67 +92,49 @@ public class PNG {
         return colors;
     }
 
-    public void show() throws DecodeException {
-        byte[] uncompressData = getImageData();
-        int width = (int) ihdr.getWidth(), height = (int) ihdr.getHeight();
-        byte[][] transferData = reverseFilterAlgorithm(uncompressData, width, height, ihdr.getBpp());
-        Color[][] colors = getColorData(transferData);
-        JFrame frame = new RasterImageFrame((int) ihdr.getWidth(), (int) ihdr.getHeight(), colors);
-        frame.setTitle("PNG");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
-//        writeInPixel();
-
-    }
-
-    public byte[] getIDATData() {
-        int dataSize = 0;
-        for (IDAT idat : idats) {
-            dataSize += idat.dataLength();
-        }
-        byte[] data = new byte[dataSize];
-        int curPos = 0;
-        for (IDAT idat : idats) {
-            System.arraycopy(idat.getData(), 0, data, curPos, (int) idat.dataLength());
-            curPos += idat.dataLength();
-        }
-        return data;
-    }
-
-    public byte[] getImageData() throws DecodeException {
-        byte[] data = getIDATData();
-        byte[] output;
-        try{
-            output = LZ77.uncompress(data);
-        }catch (DataFormatException e){
+    private byte[] applyLZ77(byte[] data) throws DecodeException {
+        byte[] result;
+        try {
+            result = LZ77.uncompress(data);
+        } catch (DataFormatException e) {
+            LOG.error("LZ77 decode error", e);
             throw new DecodeException(e);
         }
-        System.out.println("Size after decode=" + output.length);
-        return output;
+        LOG.info("Size after decode={}", result.length);
+        return result;
     }
 
+    private byte[][] applyReverseFilter(byte[] data) {
+        int width = (int) ihdr.getWidth(), height = (int) ihdr.getHeight();
+        return ReverseFilter.apply(data, width, height, ihdr.getBpp());
+    }
 
-    public void add(IHDR ihdr) throws DecodeException {
-        if (this.ihdr != null)
-            throw new DecodeException("Duplicate ihdr chunk");
+    public void setIdats(IDATManager idats) {
+        this.idats = idats;
+    }
+
+    public void setIhdr(IHDR ihdr) {
         this.ihdr = ihdr;
+    }
+
+    public void setPlte(PLTE plte) {
+        this.plte = plte;
+    }
+
+    public void setIend(IEND iend) {
+        this.iend = iend;
     }
 
     public void add(IDAT idat) throws DecodeException {
         idats.add(idat);
     }
 
-    public void add(PLTE plte) throws DecodeException {
-        if (this.plte != null)
-            throw new DecodeException("Duplicate plte chunk");
-        this.plte = plte;
+    public long getWidth() {
+        return ihdr.getWidth();
     }
 
-    public void add(IEND iend) throws DecodeException {
-        if (this.iend != null)
-            throw new DecodeException("Duplicate iend chunk");
-        this.iend = iend;
+    public long getHeight() {
+        return ihdr.getHeight();
     }
-
 
 }

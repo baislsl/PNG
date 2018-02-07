@@ -54,14 +54,14 @@ public class Decoder {
 
             if(chunkName.equals("IHDR")){
                 IHDR ihdr = new IHDR(length, type, data, crc);
-                png.add(ihdr);
+                png.setIhdr(ihdr);
                 ihdr.showInfo();
             }else if(chunkName.equals("IDAT")){
                 IDAT idat = new IDAT(length, type, data, crc);
                 png.add(idat);
             }else if(chunkName.equals("PLTE")){
                 PLTE plte = new PLTE(length, type, data, crc);
-                png.add(plte);
+                png.setPlte(plte);
             }
 
             long crcL = byteToLong(crc);
