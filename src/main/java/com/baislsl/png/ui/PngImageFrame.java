@@ -19,7 +19,7 @@ public class PngImageFrame extends JFrame {
         pack();
     }
 
-    public BufferedImage getImage(int width, int height, Color[][] data) {
+    private BufferedImage getImage(int width, int height, Color[][] data) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         WritableRaster raster = image.getRaster();
         ColorModel model = image.getColorModel();

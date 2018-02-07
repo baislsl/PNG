@@ -27,6 +27,10 @@ public class Decoder {
         in = new FileInputStream(path);
     }
 
+    public Decoder(InputStream in) {
+        this.in = in;
+    }
+
     private void readHeader() throws DecodeException, IOException {
         byte[] header = readBytes(8);
         for (int i = 0; i < 8; i++) {
