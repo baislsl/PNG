@@ -1,29 +1,25 @@
 package com.baislsl.png.ui;
 
+import com.baislsl.png.decode.DecodeException;
+import com.baislsl.png.decode.PNG;
+
 import java.awt.*;
 import java.awt.image.*;
 import javax.swing.*;
 
-/**
- * This frame shows an image with a Mandelbrot set.
- */
-public class RasterImageFrame extends JFrame {
+public class PngImageFrame extends JFrame {
 
-    public RasterImageFrame(int width, int height, Color[][] data)
-    {
-        BufferedImage image = makeMandelbrot(width, height, data);
+    public PngImageFrame(PNG png) throws DecodeException {
+        this((int) png.getWidth(), (int) png.getHeight(), png.getColor());
+    }
+
+    public PngImageFrame(int width, int height, Color[][] data) {
+        BufferedImage image = getImage(width, height, data);
         add(new JLabel(new ImageIcon(image)));
         pack();
     }
 
-    /**
-     * Makes the Mandelbrot image.
-     * @param width the width
-     * @parah height the height
-     * @return the image
-     */
-    public BufferedImage makeMandelbrot(int width, int height, Color[][] data)
-    {
+    public BufferedImage getImage(int width, int height, Color[][] data) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         WritableRaster raster = image.getRaster();
         ColorModel model = image.getColorModel();

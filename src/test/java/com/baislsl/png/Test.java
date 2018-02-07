@@ -2,15 +2,15 @@ package com.baislsl.png;
 
 import com.baislsl.png.decode.Decoder;
 import com.baislsl.png.decode.PNG;
-import com.baislsl.png.encrypt.CRC;
-import com.baislsl.png.ui.RasterImageFrame;
+import com.baislsl.png.util.CRC;
+import com.baislsl.png.ui.PngImageFrame;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.zip.CRC32;
 import java.util.zip.DataFormatException;
 
-import static com.baislsl.png.encrypt.LZ77.*;
+import static com.baislsl.png.util.LZ77.*;
 
 /**
  * Created by baislsl on 17-7-9.
@@ -23,7 +23,7 @@ public class Test {
                 Decoder decoder = new Decoder("/home/baislsl/java/png-decode/src/main/resources/test" + i +".png");
                 PNG png = decoder.readInPNG();
                 Color[][] colors = png.getColor();
-                JFrame frame = new RasterImageFrame((int) png.getWidth(), (int) png.getHeight(), colors);
+                JFrame frame = new PngImageFrame((int) png.getWidth(), (int) png.getHeight(), colors);
                 frame.setTitle("PNG");
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.setVisible(true);

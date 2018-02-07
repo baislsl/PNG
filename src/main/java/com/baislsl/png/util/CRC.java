@@ -1,4 +1,4 @@
-package com.baislsl.png.encrypt;
+package com.baislsl.png.util;
 
 /**
  * Created by baislsl on 17-7-9.
@@ -21,7 +21,7 @@ public class CRC {
     }
 
 
-    static long updateCrc(long crc, byte[] buf, int size){
+    private static long updateCrc(long crc, byte[] buf, int size){
         long ans = crc;
         for(int i=0;i<size;i++){
             ans = crcTable[(int)((ans^buf[i])&0xff)] ^ (ans >> 8);

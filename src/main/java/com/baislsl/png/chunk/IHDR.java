@@ -2,11 +2,14 @@ package com.baislsl.png.chunk;
 
 import com.baislsl.png.decode.DecodeException;
 import com.baislsl.png.util.ByteHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by baislsl on 17-7-9.
  */
 public class IHDR extends Chunk {
+    private final static Logger LOG = LoggerFactory.getLogger(IHDR.class);
     private long width, height;
     private int bitDepth, colorType, compressionMethod, filterMethod, interlaceMethod;
 
@@ -22,36 +25,36 @@ public class IHDR extends Chunk {
     };
 
     // the number of bytes per complete pixel, rounding up to one
-    public int getBpp(){
-        if(colorType == 2){             // Each pixel is an R,G,B triple.
+    public int getBpp() {
+        if (colorType == 2) {             // Each pixel is an R,G,B triple.
             return 3;
-        } else if(colorType == 6){      // Each pixel is an R,G,B triple, followed by an alpha sample.
+        } else if (colorType == 6) {      // Each pixel is an R,G,B triple, followed by an alpha sample.
             return 4;
-        } else if(colorType == 3){      // palette index, roll up to 1
+        } else if (colorType == 3) {      // palette index, roll up to 1
             return 1;
-        }
-        else {
-            System.out.println("Error when find bpp");
-            return -100;
+        } else {
+            LOG.error("Error when find bpp");
+            return 0;
         }
     }
 
     public IHDR(byte[] length, byte[] type, byte[] data, byte[] crc) throws DecodeException {
         super(length, type, data, crc);
-        //if(this.type != ChunkType.IEND)
-        //throw new DecodeException("Error for IHDR build name");
         build();
         checkLegal();
     }
 
-    public void showInfo() {
-        System.out.println("width=" + width);
-        System.out.println("height=" + height);
-        System.out.println("bitDepth=" + bitDepth);
-        System.out.println("colorType=" + colorType);
-        System.out.println("compressionMethod=" + compressionMethod);
-        System.out.println("filterMethod=" + filterMethod);
-        System.out.println("interlaceMethod=" + interlaceMethod);
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("width=");sb.append(width);
+        sb.append("height=");sb.append(height);
+        sb.append("bitDepth=");sb.append(bitDepth);
+        sb.append("colorType=");sb.append(colorType);
+        sb.append("compressionMethod=");sb.append(compressionMethod);
+        sb.append("filterMethod=");sb.append(filterMethod);
+        sb.append("interlaceMethod=");sb.append(interlaceMethod);
+        return sb.toString();
     }
 
 
@@ -63,7 +66,6 @@ public class IHDR extends Chunk {
         this.compressionMethod = Byte.toUnsignedInt(data[10]);
         this.filterMethod = Byte.toUnsignedInt(data[11]);
         this.interlaceMethod = Byte.toUnsignedInt(data[12]);
-
     }
 
 

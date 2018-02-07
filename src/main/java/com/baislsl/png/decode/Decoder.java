@@ -1,10 +1,7 @@
 package com.baislsl.png.decode;
 
 import com.baislsl.png.chunk.ChunkType;
-import com.baislsl.png.encrypt.CRC;
-import com.baislsl.png.chunk.IDAT;
-import com.baislsl.png.chunk.IHDR;
-import com.baislsl.png.chunk.PLTE;
+import com.baislsl.png.util.CRC;
 import com.baislsl.png.util.ByteHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
