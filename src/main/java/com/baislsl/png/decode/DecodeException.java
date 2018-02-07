@@ -1,4 +1,4 @@
-package com.baislsl.png.Decode;
+package com.baislsl.png.decode;
 
 /**
  * Created by baislsl on 17-7-9.

@@ -1,4 +1,4 @@
-package com.baislsl.png.Util.chunk;
+package com.baislsl.png.chunk;
 
 /**
  * Created by baislsl on 17-7-10.

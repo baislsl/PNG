@@ -1,6 +1,6 @@
-package com.baislsl.png.Util.chunk;
+package com.baislsl.png.chunk;
 
-import com.baislsl.png.Decode.DecodeException;
+import com.baislsl.png.decode.DecodeException;
 
 import java.awt.*;
 

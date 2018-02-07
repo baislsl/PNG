@@ -1,8 +1,8 @@
-package com.baislsl.png.Decode;
+package com.baislsl.png.decode;
 
-import com.baislsl.png.Util.LZ77;
-import com.baislsl.png.Util.RasterImageFrame;
-import com.baislsl.png.Util.chunk.*;
+import com.baislsl.png.encrypt.LZ77;
+import com.baislsl.png.ui.RasterImageFrame;
+import com.baislsl.png.chunk.*;
 
 import javax.swing.*;
 import java.awt.*;

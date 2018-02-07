@@ -1,9 +1,6 @@
-package com.baislsl.png.Util.chunk;
+package com.baislsl.png.chunk;
 
-import com.baislsl.png.Util.ByteHandler;
-
-import java.io.BufferedReader;
-import java.util.ArrayList;
+import com.baislsl.png.util.ByteHandler;
 
 /**
  * Created by baislsl on 17-7-9.

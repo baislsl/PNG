@@ -1,16 +1,16 @@
-package com.baislsl.png.Decode;
+package com.baislsl.png.decode;
 
-import com.baislsl.png.Util.CRC;
-import com.baislsl.png.Util.chunk.IDAT;
-import com.baislsl.png.Util.chunk.IHDR;
-import com.baislsl.png.Util.chunk.PLTE;
-import com.baislsl.png.Util.ByteHandler;
+import com.baislsl.png.encrypt.CRC;
+import com.baislsl.png.chunk.IDAT;
+import com.baislsl.png.chunk.IHDR;
+import com.baislsl.png.chunk.PLTE;
+import com.baislsl.png.util.ByteHandler;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static com.baislsl.png.Util.ByteHandler.byteToLong;
+import static com.baislsl.png.util.ByteHandler.byteToLong;
 
 /**
  * Created by baislsl on 17-7-9.

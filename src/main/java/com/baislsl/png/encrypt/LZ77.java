@@ -1,4 +1,4 @@
-package com.baislsl.png.Util;
+package com.baislsl.png.encrypt;
 
 import java.io.ByteArrayOutputStream;
 import java.util.zip.DataFormatException;

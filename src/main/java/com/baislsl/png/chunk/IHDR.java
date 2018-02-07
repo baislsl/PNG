@@ -1,7 +1,7 @@
-package com.baislsl.png.Util.chunk;
+package com.baislsl.png.chunk;
 
-import com.baislsl.png.Decode.DecodeException;
-import com.baislsl.png.Util.ByteHandler;
+import com.baislsl.png.decode.DecodeException;
+import com.baislsl.png.util.ByteHandler;
 
 /**
  * Created by baislsl on 17-7-9.

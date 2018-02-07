@@ -1,17 +1,13 @@
 package com.baislsl.png;
 
-import com.baislsl.png.Decode.Decoder;
-import com.baislsl.png.Decode.PNG;
-import com.baislsl.png.Util.*;
+import com.baislsl.png.decode.Decoder;
+import com.baislsl.png.decode.PNG;
+import com.baislsl.png.encrypt.CRC;
 
-import java.awt.*;
-import java.io.ByteArrayOutputStream;
 import java.util.zip.CRC32;
 import java.util.zip.DataFormatException;
-import java.util.zip.Deflater;
-import java.util.zip.Inflater;
 
-import static com.baislsl.png.Util.LZ77.*;
+import static com.baislsl.png.encrypt.LZ77.*;
 
 /**
  * Created by baislsl on 17-7-9.

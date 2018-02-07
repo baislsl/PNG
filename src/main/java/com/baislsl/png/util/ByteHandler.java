@@ -1,4 +1,4 @@
-package com.baislsl.png.Util;
+package com.baislsl.png.util;
 
 /**
  * Created by baislsl on 17-7-10.
